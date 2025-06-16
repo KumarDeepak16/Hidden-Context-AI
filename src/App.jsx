@@ -267,7 +267,7 @@ const CryptoVeilAI = () => {
 
   return (
     <div className="relative min-h-screen ">
-      <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_40%,theme(colors.orange.300)_100%)]"></div>
+      <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_30%,theme(colors.orange.200)_70%,theme(colors.red.400)_100%)]"></div>
 
       <div className="max-w-4xl mx-auto px-4 py-6  pb-20">
         {/* Header */}
@@ -290,10 +290,10 @@ const CryptoVeilAI = () => {
             transition={{ delay: 0.1 }}
             className="text-2xl justify-center md:text-5xl font-bold mb-2 flex items-center gap-2"
           >
-            <span className="px-2 py-1 rounded bg-gradient-to-r from-orange-300 to-orange-400 text-white">
+            <span className="px-2 py-1 rounded bg-gradient-to-r from-red-400 to-orange-400 text-white">
               HiddenContext
             </span>
-            <span className="bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
               AI
             </span>
           </motion.h1>
@@ -397,7 +397,7 @@ const CryptoVeilAI = () => {
                     onClick={() => setDisguiseStyle(style.value)}
                     className={`px-3 py-1 rounded-full text-xs border transition-all duration-200 ${
                       disguiseStyle === style.value
-                        ? "bg-orange-100 border-orange-300 text-orange-700"
+                        ? "bg-red-100 border-orange-300 text-orange-700"
                         : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
                     }`}
                   >
