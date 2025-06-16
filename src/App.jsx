@@ -1,679 +1,663 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Copy,
-  Lock,
-  Unlock,
-  Send,
-  Sparkles,
   Shield,
   Eye,
   EyeOff,
-  Clock,
+  Copy,
+  Share2,
+  Send,
+  Check,
+  Sparkles,
+  Zap,
+  X,
+  Loader2,
+  MessageCircle,
+  Twitter,
+  Facebook,
+  Linkedin,
+  Github,
 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 import "./App.css"
-// Toast component
-const Toast = ({ message, type, onClose }) => (
-  <motion.div
-    initial={{ opacity: 0, y: -50, scale: 0.9 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -50, scale: 0.9 }}
-    className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
-      type === "success" ? "bg-green-500" : "bg-red-500"
-    } text-white font-medium`}
-    onClick={onClose}
-  >
-    {message}
-  </motion.div>
-);
+const icons = {
+  whatsapp: <MessageCircle className="w-4 h-4" />,
+  telegram: <Send className="w-4 h-4" />,
+  twitter: <Twitter className="w-4 h-4" />,
+  facebook: <Facebook className="w-4 h-4" />,
+  linkedin: <Linkedin className="w-4 h-4" />,
+};
 
-// Enhanced Semantic Encoder with Time-Based Iterations
-class SemanticEncoder {
-  constructor() {
-    this.contextTemplates = [
-      "The weather forecast suggests that {encoded} will be particularly interesting today.",
-      "According to recent studies, {encoded} shows promising results in various applications.",
-      "During the conference, the speaker mentioned that {encoded} could revolutionize the industry.",
-      "The research indicates that {encoded} has significant potential for future development.",
-      "In the latest market analysis, {encoded} demonstrates exceptional performance metrics.",
-      "The technical documentation reveals that {encoded} implements advanced methodologies.",
-      "Based on user feedback, {encoded} provides enhanced functionality and reliability.",
-      "The experimental data shows that {encoded} exceeds all expected benchmarks.",
-      "The quarterly report shows that {encoded} has exceeded all projected targets.",
-      "Industry experts believe that {encoded} represents a significant breakthrough.",
-      "The development team confirmed that {encoded} delivers optimal performance.",
-      "Market research indicates that {encoded} addresses critical business needs.",
-      "The technical analysis reveals that {encoded} incorporates cutting-edge features.",
-      "Customer testimonials highlight that {encoded} provides exceptional value.",
-      "The implementation study shows that {encoded} streamlines operational processes.",
-      "Performance benchmarks demonstrate that {encoded} outperforms existing solutions.",
-    ];
-
-    this.meaningfulSentences = [
-      "The morning briefing covered several important topics.",
-      "Team collaboration has improved significantly this quarter.",
-      "The project timeline remains on track for completion.",
-      "Budget allocations have been finalized for next month.",
-      "Client feedback has been overwhelmingly positive.",
-      "The training session was well-received by all participants.",
-      "Security protocols have been updated as planned.",
-      "The new system integration went smoothly.",
-      "Quality assurance testing is proceeding as scheduled.",
-      "Resource allocation has been optimized for efficiency.",
-      "The presentation materials are ready for review.",
-      "Stakeholder meetings have been scheduled accordingly.",
-      "The documentation update is now complete.",
-      "Performance metrics show consistent improvement.",
-      "The deployment process was executed successfully.",
-      "User acceptance testing has begun this week.",
-      "The backup procedures have been verified.",
-      "Network optimization efforts are showing results.",
-      "The compliance audit was completed without issues.",
-      "Development milestones are being met on schedule.",
-      "The quarterly review meeting went very well.",
-      "All department heads confirmed their availability.",
-      "The new policy guidelines have been distributed.",
-      "Training materials are being prepared for distribution.",
-      "The system upgrade is scheduled for next week.",
-    ];
-
-    this.semanticWords = [
-      "quantum",
-      "neural",
-      "blockchain",
-      "algorithm",
-      "optimization",
-      "encryption",
-      "synthesis",
-      "paradigm",
-      "framework",
-      "architecture",
-      "methodology",
-      "protocol",
-      "infrastructure",
-      "implementation",
-      "integration",
-      "configuration",
-      "specification",
-      "validation",
-      "authentication",
-      "verification",
-      "synchronization",
-      "transformation",
-      "enhancement",
-      "acceleration",
-      "visualization",
-      "orchestration",
-      "automation",
-      "calibration",
-      "stabilization",
-      "normalization",
-      "harmonization",
-      "standardization",
-      "virtualization",
-    ];
-  }
-
-  simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
-  }
-
-  hashToDateTime(hash) {
-    // Convert hash to date and time components
-    const year = 2020 + (hash % 5); // 2020-2024
-    const month = 1 + (Math.floor(hash / 100) % 12); // 1-12
-    const day = 1 + (Math.floor(hash / 1000) % 28); // 1-28 (safe for all months)
-    const hour = Math.floor(hash / 10000) % 24; // 0-23
-    const minute = Math.floor(hash / 100000) % 60; // 0-59
-    const second = Math.floor(hash / 1000000) % 60; // 0-59
-
-    return {
-      year,
-      month: month.toString().padStart(2, "0"),
-      day: day.toString().padStart(2, "0"),
-      hour: hour.toString().padStart(2, "0"),
-      minute: minute.toString().padStart(2, "0"),
-      second: second.toString().padStart(2, "0"),
-      timestamp: `${year}-${month.toString().padStart(2, "0")}-${day
-        .toString()
-        .padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute
-        .toString()
-        .padStart(2, "0")}:${second.toString().padStart(2, "0")}`,
-    };
-  }
-
-  generateTimeBasedIterations(hash) {
-    const dateTime = this.hashToDateTime(hash);
-    // Calculate iterations based on time components
-    const iterations =
-      ((parseInt(dateTime.hour) + parseInt(dateTime.minute)) % 8) + 2; // 2-9 iterations
-    return { iterations, dateTime };
-  }
-
-  generateMeaningfulSentences(iterations, hash) {
-    const sentences = [];
-    for (let i = 0; i < 1 ; i++) {
-      const sentenceIndex = (hash + i * 17) % this.meaningfulSentences.length;
-      sentences.push(this.meaningfulSentences[sentenceIndex]);
-    }
-    return sentences;
-  }
-
-  generateSemanticKey(text) {
-    const hash = this.simpleHash(text);
-    const keyLength = 3
-    let key = "";
-
-    for (let i = 0; i < keyLength; i++) {
-      const index = (hash + i * 7) % this.semanticWords.length;
-      key += this.semanticWords[index];
-      if (i < keyLength - 1) key += "-";
-    }
-
-    return key;
-  }
-
-  createCipher(text, key) {
-    let result = "";
-    for (let i = 0; i < text.length; i++) {
-      const textChar = text.charCodeAt(i);
-      const keyChar = key.charCodeAt(i % key.length);
-      const cipher = textChar ^ keyChar;
-      result += cipher.toString(16).padStart(2, "0");
-    }
-    return result;
-  }
-
-  decryptCipher(cipher, key) {
-    let result = "";
-    for (let i = 0; i < cipher.length; i += 2) {
-      const hex = cipher.substr(i, 2);
-      const cipherChar = parseInt(hex, 16);
-      const keyChar = key.charCodeAt((i / 2) % key.length);
-      const original = cipherChar ^ keyChar;
-      result += String.fromCharCode(original);
-    }
-    return result;
-  }
-
-  encode(message) {
-    if (!message.trim()) return "";
-
-    try {
-      // Step 1: Convert to base64 for initial encoding
-      const base64 = btoa(unescape(encodeURIComponent(message)));
-
-      // Step 2: Generate hash and convert to date-time
-      const hash = this.simpleHash(message);
-      const { iterations, dateTime } = this.generateTimeBasedIterations(hash);
-
-      // Step 3: Generate semantic key
-      const semanticKey = this.generateSemanticKey(message);
-
-      // Step 4: Create cipher using semantic key
-      const cipher = this.createCipher(base64, semanticKey);
-
-      // Step 5: Generate meaningful sentences based on iterations
-      const meaningfulSentences = this.generateMeaningfulSentences(
-        iterations,
-        hash
-      );
-
-      // Step 6: Wrap cipher in natural language context
-      const template =
-        this.contextTemplates[hash % this.contextTemplates.length];
-      const encodedCore = template.replace("{encoded}", cipher);
-
-      // Step 7: Create final message with timestamp and meaningful sentences
-      let finalMessage = `Meeting scheduled for ${dateTime.timestamp}. `;
-      finalMessage += meaningfulSentences.join(" ") + " ";
-      finalMessage += encodedCore + " ";
-      finalMessage += `Please confirm attendance by ${dateTime.year}-${dateTime.month}-${dateTime.day}. `;
-      finalMessage += `Reference ID: ${semanticKey}.`;
-
-      return finalMessage;
-    } catch (error) {
-      throw new Error("Encoding failed: " + error.message);
-    }
-  }
-
-  decode(encodedMessage) {
-    try {
-      if (!encodedMessage.trim()) return "";
-
-      // Step 1: Extract semantic key
-      const keyMatch = encodedMessage.match(/Reference ID: ([a-z-]+)\./);
-      if (!keyMatch)
-        throw new Error(
-          "Invalid encoded message format - missing reference ID"
-        );
-
-      const semanticKey = keyMatch[1];
-
-      // Step 2: Extract timestamp
-      const timestampMatch = encodedMessage.match(
-        /Meeting scheduled for (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\./
-      );
-      if (!timestampMatch)
-        throw new Error("Invalid encoded message format - missing timestamp");
-
-      const timestamp = timestampMatch[1];
-
-      // Step 3: Extract cipher from natural language context
-      const templates = this.contextTemplates.map((t) =>
-        t.replace("{encoded}", "(.+?)")
-      );
-      let cipher = null;
-
-      for (const template of templates) {
-        const regex = new RegExp(template);
-        const match = encodedMessage.match(regex);
-        if (match) {
-          cipher = match[1].trim();
-          break;
-        }
-      }
-
-      if (!cipher) throw new Error("Could not extract cipher from message");
-
-      // Step 4: Verify the message structure by checking confirmation date
-      const confirmMatch = encodedMessage.match(
-        /Please confirm attendance by (\d{4}-\d{2}-\d{2})\./
-      );
-      if (!confirmMatch)
-        throw new Error(
-          "Invalid encoded message format - missing confirmation date"
-        );
-
-      // Step 5: Decrypt cipher using semantic key
-      const base64 = this.decryptCipher(cipher, semanticKey);
-
-      // Step 6: Decode from base64
-      const originalMessage = decodeURIComponent(escape(atob(base64)));
-
-      // Step 7: Validate the decoding by checking if the reconstructed hash matches
-      const reconstructedHash = this.simpleHash(originalMessage);
-      const { dateTime: expectedDateTime } =
-        this.generateTimeBasedIterations(reconstructedHash);
-
-      if (expectedDateTime.timestamp !== timestamp) {
-        throw new Error("Message integrity check failed - timestamp mismatch");
-      }
-
-      return originalMessage;
-    } catch (error) {
-      throw new Error("Failed to decode message: " + error.message);
-    }
-  }
-}
-
-export default function SemanticMessageEncoder() {
+const CryptoVeilAI = () => {
+  const [mode, setMode] = useState("encode");
   const [message, setMessage] = useState("");
   const [result, setResult] = useState("");
-  const [mode, setMode] = useState("encode");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const encoder = useRef(new SemanticEncoder());
-  const resultRef = useRef(null);
+  const [disguiseStyle, setDisguiseStyle] = useState("casual");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  const modes = [
+    {
+      value: "encode",
+      label: "Encode Message",
+      icon: EyeOff,
+      desc: "Hide your message in AI-generated content",
+    },
+    {
+      value: "decode",
+      label: "Decode Message",
+      icon: Eye,
+      desc: "Extract hidden messages from disguised text",
+    },
+  ];
+
+  const disguiseStyles = [
+    {
+      value: "casual",
+      label: "Casual",
+      desc: "Natural chat style",
+    },
+    {
+      value: "professional",
+      label: "Business",
+      desc: "Corporate communication",
+    },
+    {
+      value: "educational",
+      label: "Educational",
+      desc: "Knowledge sharing",
+    },
+    {
+      value: "news",
+      label: "News",
+      desc: "Breaking news format",
+    },
+    {
+      value: "tech",
+      label: "Tech",
+      desc: "Technology discussion",
+    },
+    {
+      value: "lifestyle",
+      label: "Lifestyle",
+      desc: "Personal development",
+    },
+  ];
+
+  // Enhanced encryption with better format
+  const encryptMessage = (text) => {
+    const encoded = btoa(encodeURIComponent(text));
+    const scrambled = encoded
+      .split("")
+      .map((char, i) => {
+        const shift = (i % 7) + 1;
+        if (char.match(/[A-Za-z]/)) {
+          const code = char.charCodeAt(0);
+          const base = code >= 65 && code <= 90 ? 65 : 97;
+          return String.fromCharCode(((code - base + shift) % 26) + base);
+        }
+        return char;
+      })
+      .join("");
+
+    // Use consistent delimiter and add markers
+    return `#${scrambled.match(/.{1,6}/g)?.join("-") || scrambled}#`;
   };
 
-  const processMessage = async () => {
-    if (!message.trim()) {
-      showToast("Please enter a message", "error");
-      return;
-    }
+  const decryptMessage = (encryptedText) => {
+    try {
+      // Remove markers and clean
+      const cleaned = encryptedText.replace(/#/g, "").replace(/-/g, "");
+      const unscrambled = cleaned
+        .split("")
+        .map((char, i) => {
+          const shift = (i % 7) + 1;
+          if (char.match(/[A-Za-z]/)) {
+            const code = char.charCodeAt(0);
+            const base = code >= 65 && code <= 90 ? 65 : 97;
+            return String.fromCharCode(
+              ((code - base - shift + 26) % 26) + base
+            );
+          }
+          return char;
+        })
+        .join("");
 
-    setIsProcessing(true);
+      return decodeURIComponent(atob(unscrambled));
+    } catch (error) {
+      toast.error("No Secret Code Found");
+    }
+  };
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const genAI = new GoogleGenerativeAI(apiKey);
+
+  const generateAIDisguise = async (encryptedData, style) => {
+    const stylePrompts = {
+      casual: `Write a casual, friendly message that naturally incorporates this code: ${encryptedData}. Make it seem like a normal conversation where you're sharing some technical reference or ID.`,
+      professional: `Create a professional message that includes this reference code: ${encryptedData}. Make it seem like a business identifier or project reference.`,
+      educational: `Write an educational post that includes this study reference: ${encryptedData}. Make it seem like an academic citation or research code.`,
+      news: `Create a news-style update that mentions this tracking code: ${encryptedData}. Make it seem like a news reference number.`,
+      tech: `Write about a technology topic and include this system ID: ${encryptedData}. Make it seem like a technical identifier.`,
+      lifestyle: `Create lifestyle content that mentions this product code: ${encryptedData}. Make it seem like a product reference or model number.`,
+    };
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate processing
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      if (mode === "encode") {
-        const encoded = encoder.current.encode(message);
-        setResult(encoded);
-        showToast("Message encoded with time-based iterations!");
-      } else {
-        const decoded = encoder.current.decode(message);
-        setResult(decoded);
-        showToast("Message decoded and verified successfully!");
-      }
+      const prompt = `${
+        stylePrompts[style] || stylePrompts.casual
+      } Keep the response very short, concise, and relatable (indian users)`;
+
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      return text;
     } catch (error) {
-      showToast(error.message, "error");
-      setResult("");
+      console.error("Gemini API error:", error);
+
+      // Fallback disguise if AI fails
+      const fallbackDisguises = {
+        casual: `Hey! Just wanted to share this interesting reference I found: ${encryptedData}. Thought you might find it useful for your project!`,
+        professional: `Please find the project reference code: ${encryptedData}. This identifier will be needed for the next phase of our collaboration.`,
+        educational: `Here's an interesting research reference: ${encryptedData}. This code contains valuable insights for academic purposes.`,
+        news: `Breaking: New development tracked under reference ${encryptedData}. This identifier marks a significant milestone in current events.`,
+        tech: `Latest tech update with system ID: ${encryptedData}. This reference code represents the newest innovation in our digital infrastructure.`,
+        lifestyle: `Discovered this amazing product with code: ${encryptedData}. This reference number has been a game-changer for personal productivity!`,
+      };
+
+      return fallbackDisguises[style] || fallbackDisguises.casual;
+    }
+  };
+
+  // Improved extraction pattern
+  const extractEncryptedData = (text) => {
+    // Look for our specific pattern: #...# (content between hash markers)
+    const hashPattern = /#([A-Za-z0-9+/=-]+(?:-[A-Za-z0-9+/=-]+)*)#/g;
+    const match = text.match(hashPattern);
+
+    if (match && match.length > 0) {
+      return match[0]; // Return the first match with hash markers
     }
 
-    setIsProcessing(false);
+    // Fallback: look for base64-like patterns with dashes
+    const fallbackPattern = /[A-Za-z0-9+/=]{6,}(?:-[A-Za-z0-9+/=]{1,6})+/g;
+    const fallbackMatch = text.match(fallbackPattern);
+
+    if (fallbackMatch && fallbackMatch.length > 0) {
+      return `#${fallbackMatch[0]}#`; // Add markers if missing
+    }
+
+    return "";
+  };
+
+  const handleProcess = async () => {
+    if (!message.trim()) return;
+
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      if (mode === "encode") {
+        const encrypted = encryptMessage(message);
+        const disguised = await generateAIDisguise(encrypted, disguiseStyle);
+        setResult(disguised);
+        setSuccess("Encrypted & ready!");
+        toast.success("Encrypted & ready!");        
+      } else {
+        const extractedData = extractEncryptedData(message);
+        if (!extractedData) {
+          throw new Error(
+            "No encrypted data found in the message. Please ensure the message contains properly encoded content."
+          );
+        }
+        const decrypted = decryptMessage(extractedData);
+        setResult(decrypted);
+        setSuccess("Secret unlocked!");
+        toast.success("Secret unlocked!");
+      }
+    } catch (error) {
+      setError(error.message);
+      toast.error("Secret key not detected!");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      showToast("Copied to clipboard!");
-    } catch (err) {
-      showToast("Failed to copy", "error");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      setError("Failed to copy to clipboard");
+      toast.error("Failed to copy to clipboard");
     }
   };
 
-  const clearAll = () => {
-    setMessage("");
-    setResult("");
-    setShowPreview(false);
-  };
+  const shareToSocial = (platform) => {
+    const text = encodeURIComponent(result);
+    const url = encodeURIComponent(window.location.href);
 
-  useEffect(() => {
-    if (result && resultRef.current) {
-      resultRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
+    const shareUrls = {
+      whatsapp: `https://wa.me/?text=${text}`,
+      telegram: `https://t.me/share/url?text=${text}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    };
+
+    if (shareUrls[platform]) {
+      window.open(shareUrls[platform], "_blank", "width=600,height=400");
     }
-  }, [result]);
+    setShowShareModal(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      <AnimatePresence>
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            onClose={() => setToast(null)}
-          />
-        )}
-      </AnimatePresence>
+    <div className="relative min-h-screen ">
+      <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_40%,theme(colors.orange.300)_100%)]"></div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="max-w-4xl mx-auto px-4 py-6  pb-20">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-orange-400 to-amber-500 p-3 rounded-full">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">
-            Semantic Message Encoder
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Advanced time-based natural language encryption for secure
+        <div className="text-center mb-3">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-100 to-orange-200 border border-orange-300 px-4 py-2 rounded-full mb-3"
+          >
+            <Shield className="w-4 h-4 text-orange-600" />
+            <span className="text-xs font-medium text-orange-700">
+              Next-Gen Steganography
+            </span>
+            <Sparkles className="w-3 h-3 text-orange-500" />
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-2xl justify-center md:text-5xl font-bold mb-2 flex items-center gap-2"
+          >
+            <span className="px-2 py-1 rounded bg-gradient-to-r from-orange-300 to-orange-400 text-white">
+              HiddenContext
+            </span>
+            <span className="bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+              AI
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm text-gray-600 max-w-2xl mx-auto"
+          >
+            Advanced AI-powered steganography platform for secure, invisible
             communication
-          </p>
-        </motion.div>
+          </motion.p>
+        </div>
 
-        {/* Mode Toggle */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex justify-center mb-8"
-        >
-          <div className="bg-white rounded-full p-1 shadow-lg border border-orange-100">
-            <div className="flex">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setMode("encode")}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 flex items-center gap-2 ${
-                  mode === "encode"
-                    ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-orange-600"
-                }`}
-              >
-                <Lock className="w-4 h-4" />
-                Encode
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setMode("decode")}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 flex items-center gap-2 ${
-                  mode === "decode"
-                    ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-orange-600"
-                }`}
-              >
-                <Unlock className="w-4 h-4" />
-                Decode
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Main Input Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl shadow-xl border border-orange-100 p-8 mb-8"
-        >
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {mode === "encode"
-                ? "Enter your secret message"
-                : "Paste encoded message"}
-            </h3>
-            <p className="text-gray-500">
-              {mode === "encode"
-                ? "Your message will be encrypted with time-based iterations and natural language patterns"
-                : "Paste the meeting invitation formatted message to decrypt it"}
-            </p>
-          </div>
-
-          <div className="relative">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={
-                mode === "encode"
-                  ? "Type your confidential message here..."
-                  : "Paste the encoded meeting invitation message here..."
-              }
-              className="w-full h-32 p-4 border-2 border-orange-100 rounded-2xl focus:border-orange-300 focus:outline-none resize-none text-gray-700 placeholder-gray-400 transition-colors duration-300"
-              maxLength={mode === "encode" ? 500 : 3000}
-            />
-            <div className="absolute bottom-4 right-4 text-sm text-gray-400">
-              {message.length}/{mode === "encode" ? 500 : 3000}
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-4 mt-6">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={processMessage}
-              disabled={isProcessing || !message.trim()}
-              className="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-8 py-3 rounded-full font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-300"
-            >
-              {isProcessing ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
+        {/* Main Interface */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
+          {/* Mode Selection */}
+          <div className="mb-5">
+            {/* Mobile: Toggle Switch */}
+            <div className="md:hidden flex justify-center mb-4">
+              <div className="flex items-center bg-gray-100 rounded-full p-1">
+                {modes.map((modeOption) => (
+                  <button
+                    key={modeOption.value}
+                    onClick={() => {
+                      setMode(modeOption.value);
+                      setMessage("");
+                      setResult("");
+                      setError("");
                     }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      mode === modeOption.value
+                        ? "bg-orange-400 text-white shadow"
+                        : "text-gray-600"
+                    }`}
                   >
-                    <Clock className="w-4 h-4" />
-                  </motion.div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  {mode === "encode" ? "Encode Message" : "Decode Message"}
-                </>
-              )}
-            </motion.button>
+                    {modeOption.label.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            {message && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={clearAll}
-                className="px-6 py-3 rounded-full border-2 border-orange-200 text-orange-600 font-medium hover:bg-orange-50 transition-all duration-300"
-              >
-                Clear
-              </motion.button>
-            )}
+            {/* Desktop: Buttons Grid */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-3">
+              {modes.map((modeOption) => (
+                <motion.button
+                  key={modeOption.value}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => {
+                    setMode(modeOption.value);
+                    setMessage("");
+                    setResult("");
+                    setError("");
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                    mode === modeOption.value
+                      ? "bg-gradient-to-r from-orange-50 to-orange-100 border-orange-300 shadow-sm"
+                      : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`p-2 rounded-lg ${
+                        mode === modeOption.value ? "bg-orange-200" : "bg-white"
+                      }`}
+                    >
+                      <modeOption.icon
+                        className={`w-5 h-5 ${
+                          mode === modeOption.value
+                            ? "text-orange-700"
+                            : "text-gray-600"
+                        }`}
+                      />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-1">
+                        {modeOption.label}
+                      </h3>
+                      <p className="text-xs text-gray-600">{modeOption.desc}</p>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </motion.div>
 
-        {/* Result Section */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              ref={resultRef}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-3xl shadow-xl border border-orange-100 p-8"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  {mode === "encode" ? (
-                    <>
-                      <Lock className="w-5 h-5 text-orange-500" />
-                      Encoded Message
-                    </>
-                  ) : (
-                    <>
-                      <Unlock className="w-5 h-5 text-green-500" />
-                      Decoded Message
-                    </>
-                  )}
-                </h3>
+          {/* Disguise Style Selection (Encode mode only) */}
+          {mode === "encode" && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-800 mb-1">
+                Select Encoding Style
+              </h3>
 
-                <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition-colors"
-                    title={showPreview ? "Hide preview" : "Show preview"}
+              {/* Pills for mobile */}
+              <div className="flex flex-wrap gap-2 gap-x-5 justify-center md:hidden">
+                {disguiseStyles.map((style) => (
+                  <button
+                    key={style.value}
+                    onClick={() => setDisguiseStyle(style.value)}
+                    className={`px-3 py-1 rounded-full text-xs border transition-all duration-200 ${
+                      disguiseStyle === style.value
+                        ? "bg-orange-100 border-orange-300 text-orange-700"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
                   >
-                    {showPreview ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => copyToClipboard(result)}
-                    className="p-2 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 transition-colors"
-                    title="Copy to clipboard"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </motion.button>
-                </div>
+                    {style.label} {/* only first word if label has multiple */}
+                  </button>
+                ))}
               </div>
 
-              <div className="relative">
-                <div
-                  className={`p-4 bg-gray-50 rounded-2xl border border-gray-200 ${
-                    !showPreview ? "blur-sm" : ""
-                  } transition-all duration-300`}
-                >
-                  <pre className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed font-mono">
-                    {result}
-                  </pre>
-                </div>
+              {/* Grid with description for larger screens */}
+              <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                {disguiseStyles.map((style) => (
+                  <motion.button
+                    key={style.value}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setDisguiseStyle(style.value)}
+                    className={`p-3 rounded-lg border transition-all duration-200 ${
+                      disguiseStyle === style.value
+                        ? "bg-gradient-to-r from-orange-100 to-orange-200 border-orange-300 shadow-sm"
+                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-xs font-medium text-gray-800 mb-1">
+                        {style.label}
+                      </div>
+                      <div className="text-xs text-gray-600">{style.desc}</div>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
 
-                {!showPreview && (
-                  <div className="absolute inset-0 flex items-center justify-center">
+          {/* Input Section */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              {mode === "encode"
+                ? "🔒 Your Secret Message"
+                : "🔍 Disguised Message"}
+            </label>
+
+            <div className="relative">
+              <textarea
+                value={message}
+                ref={inputRef}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={
+                  mode === "encode"
+                    ? "Enter your confidential message here..."
+                    : "Paste the AI-disguised message to reveal the hidden content..."
+                }
+                className="w-full h-32 p-4 pr-16 bg-gray-50 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all duration-200 text-gray-800 placeholder-gray-500 text-sm"
+              />
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleProcess}
+                disabled={isLoading || !message.trim()}
+                className="absolute bottom-3 right-3 p-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4" />
+                )}
+              </motion.button>
+
+              <div className="absolute bottom-3 left-3 text-xs text-gray-500">
+                {message.length} characters
+              </div>
+            </div>
+          </div>
+
+          {/* Result Section */}
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="border-t border-gray-200 pt-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
+                    {mode === "encode" ? (
+                      <>
+                        <EyeOff className="w-4 h-4 text-orange-600" />
+                        <span>🎭 AI-Disguised Message</span>
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4 text-orange-600" />
+                        <span>🔓 Revealed Secret</span>
+                      </>
+                    )}
+                  </h3>
+
+                  <div className="flex items-center space-x-2">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
-                      onClick={() => setShowPreview(true)}
-                      className="bg-white px-4 py-2 rounded-full shadow-lg border border-orange-200 text-orange-600 font-medium"
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => copyToClipboard(result)}
+                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                     >
-                      Click to reveal
+                      {copied ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-gray-600" />
+                      )}
                     </motion.button>
-                  </div>
-                )}
-              </div>
 
-              <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100">
-                <p className="text-sm text-gray-600 mb-2">
-                  <strong>Security Note:</strong>{" "}
-                  {mode === "encode"
-                    ? "Your message is encrypted using time-based iterations with natural meeting invitation format."
-                    : "Your message has been successfully decrypted with timestamp integrity verification."}
-                </p>
-                {mode === "encode" && result && (
-                  <div className="text-xs text-gray-500 mt-2">
-                    <strong>Encoding Details:</strong> Hash converted to
-                    date/time format with 2-9 meaningful sentences based on
-                    temporal iterations for enhanced natural language disguise.
+                    {mode === "encode" && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowShareModal(true)}
+                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
+                        <Share2 className="w-4 h-4 text-gray-600" />
+                      </motion.button>
+                    )}
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
 
-        {/* Feature Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid md:grid-cols-3 gap-6 mt-12"
-        >
-          {[
-            {
-              icon: Shield,
-              title: "Semantic Security",
-              description:
-                "Messages are disguised as natural meeting invitations with realistic timestamps and business context",
-            },
-            {
-              icon: Clock,
-              title: "Time-Based Iterations",
-              description:
-                "Hash is converted to date/time format, determining meaningful sentence iterations for natural disguise",
-            },
-            {
-              icon: Lock,
-              title: "Integrity Verification",
-              description:
-                "Timestamp-based verification ensures message authenticity and prevents tampering",
-            },
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-orange-100 hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="bg-gradient-to-r from-orange-400 to-amber-500 p-3 rounded-full w-fit mb-4">
-                <feature.icon className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                {feature.title}
-              </h4>
-              <p className="text-gray-600 text-sm">{feature.description}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                  <p className="text-gray-800 leading-relaxed text-sm whitespace-pre-wrap">
+                    {result}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="absolute bottom-0 left-0 w-full text-center space-y-2 pb-4">
+          <p className="text-xs text-gray-800 flex items-center justify-center gap-1">
+            🚀 Powered by AI • 🔐 Military-grade encryption • 🌐 Zero data
+            retention
+          </p>
+          <a
+            href="https://github.com/kumardeepak16"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-xs text-gray-900 hover:text-orange-700 transition-colors"
+          >
+            <Github className="w-4 h-4 mr-1" />
+            Designed & developed by kumardeepak16
+          </a>
+        </div>
       </div>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowShareModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-2xl border border-gray-200 shadow-xl p-6 max-w-sm w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800">
+                  Share Message
+                </h3>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  {
+                    name: "WhatsApp",
+                    key: "whatsapp",
+                    color: "hover:bg-green-50 border-green-200",
+                    textColor: "text-green-700",
+                  },
+                  {
+                    name: "Telegram",
+                    key: "telegram",
+                    color: "hover:bg-blue-50 border-blue-200",
+                    textColor: "text-blue-700",
+                  },
+                  {
+                    name: "Twitter",
+                    key: "twitter",
+                    color: "hover:bg-gray-50 border-gray-200",
+                    textColor: "text-gray-700",
+                  },
+                  {
+                    name: "Facebook",
+                    key: "facebook",
+                    color: "hover:bg-blue-50 border-blue-200",
+                    textColor: "text-blue-700",
+                  },
+                  {
+                    name: "LinkedIn",
+                    key: "linkedin",
+                    color: "hover:bg-blue-50 border-blue-200",
+                    textColor: "text-blue-800",
+                  },
+                ].map((platform) => (
+                  <button
+                    key={platform.key}
+                    onClick={() => shareToSocial(platform.key)}
+                    className={`p-3 rounded-lg text-sm font-medium border-2 border-gray-200 flex items-center gap-3 transition-all ${platform.color} ${platform.textColor}`}
+                  >
+                    {icons[platform.key]}
+                    Share on {platform.name}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          success: {
+            style: {
+              background: "linear-gradient(90deg, #fbbf24, #f97316)", // orange-400 to orange-500
+              color: "#fff",
+              border: "1px solid #f97316", // orange-500
+              boxShadow: "0 4px 12px rgba(251, 191, 36, 0.3)", // light subtle glow
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#f97316", // orange-500
+            },
+          },
+          error: {
+            style: {
+              background: "linear-gradient(90deg, #fca5a5, #f87171)", // soft red-pink for error
+              color: "#fff",
+              border: "1px solid #f87171",
+              boxShadow: "0 4px 12px rgba(248, 113, 113, 0.3)",
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#f87171",
+            },
+          },
+        }}
+      />
     </div>
   );
-}
+};
+
+export default CryptoVeilAI;
