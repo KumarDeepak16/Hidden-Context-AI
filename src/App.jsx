@@ -269,7 +269,7 @@ const CryptoVeilAI = () => {
     <div className="relative min-h-screen ">
       <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_30%,theme(colors.orange.200)_70%,theme(colors.red.400)_100%)]"></div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6  pb-20">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-3">
           <motion.div
@@ -327,7 +327,7 @@ const CryptoVeilAI = () => {
                     }}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                       mode === modeOption.value
-                        ? "bg-orange-400 text-white shadow"
+                        ? "bg-red-400 text-white shadow"
                         : "text-gray-600"
                     }`}
                   >
@@ -534,7 +534,7 @@ const CryptoVeilAI = () => {
           </AnimatePresence>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full text-center space-y-2 pb-4">
+        <div className="w-full text-center space-y-2 py-4 px-2">
           <p className="text-xs text-gray-800 flex items-center justify-center gap-1">
             🚀 Powered by AI • 🔐 Military-grade encryption • 🌐 Zero data
             retention

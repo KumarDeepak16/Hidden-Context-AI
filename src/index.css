@@ -7,3 +7,32 @@ button{
 textarea{
     @apply outline-none
 }
+
+/* Fully Thin Gradient Scrollbar - Modern Orange to Red */
+::-webkit-scrollbar {
+    width: 4px;
+    /* thinner vertical scrollbar */
+    height: 4px;
+    /* thinner horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #fb923c, #f87171);
+    /* orange-400 to red-400 */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #f97316, #ef4444);
+    /* orange-500 to red-500 on hover */
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #fb923c transparent;
+}
