@@ -267,22 +267,22 @@ const CryptoVeilAI = () => {
 
   return (
     <div className="relative min-h-screen ">
-      <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_30%,theme(colors.orange.200)_70%,theme(colors.red.400)_100%)]"></div>
+      <div className="absolute animate-pulse inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_30%,theme(colors.orange.200)_50%,theme(colors.pink.200)_80%)]"></div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-3">
-          <motion.div
+        <div className="text-center mb-3 pt-5 lg:pt-10">
+          {/* <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-100 to-orange-200 border border-orange-300 px-4 py-2 rounded-full mb-3"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-100 to-orange-200 border border-orange-300 px-2  py-1 rounded-full mb-3"
           >
             <Shield className="w-4 h-4 text-orange-600" />
             <span className="text-xs font-medium text-orange-700">
               Next-Gen Steganography
             </span>
             <Sparkles className="w-3 h-3 text-orange-500" />
-          </motion.div>
+          </motion.div> */}
 
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
@@ -290,9 +290,7 @@ const CryptoVeilAI = () => {
             transition={{ delay: 0.1 }}
             className="text-2xl justify-center md:text-5xl font-bold mb-2 flex items-center gap-2"
           >
-            <span className="px-2 py-1 rounded bg-gradient-to-r from-red-400 to-orange-400 text-white">
-              HiddenContext
-            </span>
+            <span className="animated-rainbow-gradient">HiddenContext</span>
             <span className="bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
               AI
             </span>
@@ -441,7 +439,7 @@ const CryptoVeilAI = () => {
             </label>
 
             <div className="relative">
-              <textarea
+              {/* <textarea
                 value={message}
                 ref={inputRef}
                 onChange={(e) => setMessage(e.target.value)}
@@ -451,6 +449,21 @@ const CryptoVeilAI = () => {
                     : "Paste the AI-disguised message to reveal the hidden content..."
                 }
                 className="w-full h-32 p-4 pr-16 bg-gray-50 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all duration-200 text-gray-800 placeholder-gray-500 text-sm"
+              /> */}
+              <textarea
+                value={message}
+                ref={inputRef}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  e.target.style.height = "auto"; // Reset the height
+                  e.target.style.height = `${e.target.scrollHeight}px`; // Set to scrollHeight
+                }}
+                placeholder={
+                  mode === "encode"
+                    ? "Enter your confidential message here..."
+                    : "Paste the AI-disguised message to reveal the hidden content..."
+                }
+                className="w-full min-h-32 p-4 pr-16   bg-gray-50 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all duration-200 text-gray-800 placeholder-gray-500 text-sm overflow-hidden"
               />
 
               <motion.button
@@ -467,7 +480,7 @@ const CryptoVeilAI = () => {
                 )}
               </motion.button>
 
-              <div className="absolute bottom-3 left-3 text-xs text-gray-500">
+              <div className="absolute top-1 right-3 text-xs text-gray-500">
                 {message.length} characters
               </div>
             </div>

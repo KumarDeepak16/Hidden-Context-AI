@@ -2,6 +2,7 @@
 
 **Hidden Context AI** is a modern, AI-powered tool that allows you to securely encode and decode hidden messages. It blends military-grade encryption with AI-generated disguise text to make secrets look natural in any context — casual, professional, tech, news, and more.
 
+![image](https://github.com/user-attachments/assets/b4f50a1e-85a0-4a8b-94d6-03ecfbde6bec)
 ---
 
 ## ✨ Features

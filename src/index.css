@@ -36,3 +36,36 @@ textarea{
     scrollbar-width: thin;
     scrollbar-color: #fb923c transparent;
 }
+
+
+@keyframes rainbowGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animated-rainbow-gradient {
+    background: linear-gradient(270deg,
+            #ff3cac,
+            #7a28c1,
+            #e1722d,
+            #cb0b0b,
+            #c09f0e,
+            #ff3cac);
+    background-size: 600% 600%;
+    animation: rainbowGradient 8s ease infinite;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    /* px-2 py-1 */
+    border-radius: 0.5rem;
+    /* rounded */
+    display: inline-block;
+}
